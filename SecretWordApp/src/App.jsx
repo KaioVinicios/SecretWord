@@ -5,6 +5,7 @@ import GameOver from "./components/GameOver";
 import Game from "./components/Game";
 import { wordsList } from "./data/words";
 import { use } from "react";
+import Confetti from "react-confetti-boom";
 
 const guessesQty = 3;
 
@@ -19,11 +20,21 @@ function App() {
   const [words] = useState(wordsList);
   const [pickedWord, setPickedWord] = useState("");
   const [pickedCategory, setPickedCategory] = useState("");
-  const [letters, setLetters] = useState([]);
+  const [letters, setLetters] = useState(["start"]);
   const [guessedLetters, setGuessedLetters] = useState([]);
   const [wrongLetters, setWrongLetters] = useState([]);
   const [guesses, setGuesses] = useState(guessesQty);
   const [score, setScore] = useState(0);
+  const [celebrate, setCelebrate] = useState(false);
+  
+  console.log(pickedWord)
+
+  const handleCelebrate = () => {
+    setCelebrate(true);
+    setTimeout(() => {
+      setCelebrate(false);
+    }, 5000);
+  };
 
   const pickWordAndCategory = useCallback(() => {
     const categories = Object.keys(words);
@@ -36,7 +47,7 @@ function App() {
   }, [words]);
 
   const startGame = useCallback(() => {
-    clearLetterStates()
+    clearLetterStates();
     const { word, categorie } = pickWordAndCategory();
     let wordLetters = word.split("");
     wordLetters = wordLetters.map((l) => l.toLowerCase());
@@ -84,12 +95,13 @@ function App() {
   }, [guesses]);
 
   useEffect(() => {
-    const uniqueLetters = [ ... new Set(letters)]
-    if(guessedLetters.length == uniqueLetters.length) {
-      setScore((actualScore) => (actualScore += 100))
-      startGame()
+    const uniqueLetters = [...new Set(letters)];
+    if (guessedLetters.length == uniqueLetters.length) {
+      setScore((actualScore) => (actualScore += 100));
+      handleCelebrate();
+      startGame();
     }
-  }, [guessedLetters, letters, startGame])
+  }, [guessedLetters, letters, startGame]);
 
   const retry = () => {
     setGuesses(guessesQty);
@@ -99,6 +111,7 @@ function App() {
 
   return (
     <div className="App">
+      {celebrate && <Confetti shapeSize={40} mode="boom" particleCount={100}/>}
       {gameStage === "start" && <StartScreen startGame={startGame} />}
       {gameStage === "game" && (
         <Game
